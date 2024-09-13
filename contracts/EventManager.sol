@@ -3,7 +3,7 @@ pragma solidity ^0.8.24;
 
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 
-contract EventContract {
+contract EventManager {
   
   // State Variables
   address eventManager;
@@ -22,7 +22,7 @@ contract EventContract {
     uint time;
   }
 
-  Event[] public viewAllEvents;
+  Event[] private viewAllEvents;
 
   // CUSTOM ERRORS
   error notEventManager();
