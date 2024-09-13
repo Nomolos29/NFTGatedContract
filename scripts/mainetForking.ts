@@ -11,38 +11,48 @@ async function main() {
     await helpers.impersonateAccount(TOKEN_HOLDER);
     const impersonatedSigner = await ethers.getSigner(TOKEN_HOLDER);
 
-    const amountOut = ethers.parseUnits("20", 18);
-    const amountInMax = ethers.parseUnits("1000", 6);
+    const amountUSDCDeposit = ethers.parseUnits("2", 6);
+    const amountDAIDeposit = ethers.parseUnits("2", 18);
+
+    const amountAMin = ethers.parseUnits("1", 6);
+    const amountBMin = ethers.parseUnits("1", 18);
+
+
 
     const USDC_Contract = await ethers.getContractAt("IERC20", USDC, impersonatedSigner);
-    const DAI_Contract = await ethers.getContractAt("IERC20", DAI);
+    const DAI_Contract = await ethers.getContractAt("IERC20", DAI, impersonatedSigner);
     
     const ROUTER = await ethers.getContractAt("IUniswapV2Router", ROUTER_ADDRESS, impersonatedSigner);
 
-    await USDC_Contract.approve(ROUTER, amountOut);
+    await USDC_Contract.approve(ROUTER, amountUSDCDeposit);
+    await DAI_Contract.approve(ROUTER, amountDAIDeposit);
+
 
     const usdcBal = await USDC_Contract.balanceOf(impersonatedSigner.address);
     const daiBal = await DAI_Contract.balanceOf(impersonatedSigner.address);
     const deadline = Math.floor(Date.now() / 1000) + (60 * 10);
 
-    console.log("usdc balance before swap", Number(usdcBal));
-    console.log("dai balance before swap", Number(daiBal));
+    console.log("usdc balance before liquidity", Number(usdcBal));
+    console.log("dai balance before liquidity", Number(daiBal));
 
-    await ROUTER.swapTokensForExactTokens(
-        amountOut,
-        amountInMax,
-        [USDC, DAI],
-        impersonatedSigner.address,
-        deadline
-    );
+
+    const usdcAllowance = await USDC_Contract.allowance(impersonatedSigner.address, ROUTER_ADDRESS);
+    console.log("USDC allowance:", ethers.formatUnits(usdcAllowance, 6)); // Format using 6 decimals
+
+    const daiAllowance = await DAI_Contract.allowance(impersonatedSigner.address, ROUTER_ADDRESS);
+    console.log("DAI allowance:", ethers.formatUnits(daiAllowance, 6)); // Format using 6 decimals
+
+    await ROUTER.addLiquidity(USDC, DAI, amountUSDCDeposit, amountDAIDeposit, amountAMin, amountBMin, TOKEN_HOLDER, deadline )
+
+    console.log("=========================================================");
 
     const usdcBalAfter = await USDC_Contract.balanceOf(impersonatedSigner.address);
     const daiBalAfter = await DAI_Contract.balanceOf(impersonatedSigner.address);
 
-    console.log("=========================================================");
+    console.log("usdc balance after liquidity", Number(usdcBalAfter));
+    console.log("dai balance after liquidity", Number(daiBalAfter));
 
-    console.log("usdc balance after swap", Number(usdcBalAfter));
-    console.log("dai balance after swap", Number(daiBalAfter));
+
 }
 
 // We recommend this pattern to be able to use async/await everywhere
