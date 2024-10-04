@@ -22,7 +22,7 @@ contract EventManager {
     uint time;
   }
 
-  Event[] private viewAllEvents;
+  Event[] public viewAllEvents;
 
   // CUSTOM ERRORS
   error notEventManager();
@@ -134,5 +134,7 @@ contract EventManager {
 
     emit eventDeleted(chosenEvent.eventId, chosenEvent.eventName, chosenEvent.time, chosenEvent.attendance, chosenEvent.maxAttendies);
   }
+
+  
 
 }

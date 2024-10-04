@@ -3,22 +3,23 @@ pragma solidity ^0.8.9;
 
 import "./EventManager.sol";
 
-contract MultisigFactory {
+contract EventManagerFactory {
 
-  EventManager[] multisigClones;
+  EventManager[] eventManagerClones;
 
-  function createEventManager() external returns (EventManager newMulsig_, uint256 length_) {
+  function createEventManager() external returns (EventManager newEventManager) {
 
     address owner = msg.sender;
 
-    newMulsig_ = new EventManager(owner);
+    EventManager eventManager = new EventManager(owner);
 
-    multisigClones.push(newMulsig_);
+    eventManagerClones.push(eventManager);
 
-    length_ = multisigClones.length;
+    return eventManager;
+
   }
 
-  function getMultiSigClones() external view returns(EventManager[] memory) {
-    return multisigClones;
+  function getEventManagerClones() external view returns(EventManager[] memory) {
+    return eventManagerClones;
   }
 }

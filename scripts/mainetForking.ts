@@ -7,15 +7,17 @@ async function main() {
     const DAI = "0x6B175474E89094C44Da98b954EedeAC495271d0F";
 
     const TOKEN_HOLDER = "0xf584F8728B874a6a5c7A8d4d387C9aae9172D621";
+    // const TOKEN_RECEPEINT = "0x30FF61e3D33d5AD2cB0C8640D49681d8eD228940"; 
 
     await helpers.impersonateAccount(TOKEN_HOLDER);
     const impersonatedSigner = await ethers.getSigner(TOKEN_HOLDER);
 
-    const amountUSDCDeposit = ethers.parseUnits("2", 6);
-    const amountDAIDeposit = ethers.parseUnits("2", 18);
+    const valueInUSDC = ethers.parseUnits("6", 6);
+    const valueInDAI = ethers.parseUnits("4", 18);
 
-    const amountAMin = ethers.parseUnits("1", 6);
-    const amountBMin = ethers.parseUnits("1", 18);
+    const minValueA = ethers.parseUnits("2", 6);
+    const minValueB = ethers.parseUnits("2", 18);
+
 
 
 
@@ -24,30 +26,50 @@ async function main() {
     
     const ROUTER = await ethers.getContractAt("IUniswapV2Router", ROUTER_ADDRESS, impersonatedSigner);
 
-    await USDC_Contract.approve(ROUTER, amountUSDCDeposit);
-    await DAI_Contract.approve(ROUTER, amountDAIDeposit);
+    await USDC_Contract.approve(ROUTER, valueInUSDC);
+    await DAI_Contract.approve(ROUTER, valueInDAI);
 
 
     const usdcBal = await USDC_Contract.balanceOf(impersonatedSigner.address);
     const daiBal = await DAI_Contract.balanceOf(impersonatedSigner.address);
+
+    
     const deadline = Math.floor(Date.now() / 1000) + (60 * 10);
+
 
     console.log("usdc balance before liquidity", Number(usdcBal));
     console.log("dai balance before liquidity", Number(daiBal));
 
+    console.log("=================================================================");
 
-    const usdcAllowance = await USDC_Contract.allowance(impersonatedSigner.address, ROUTER_ADDRESS);
-    console.log("USDC allowance:", ethers.formatUnits(usdcAllowance, 6)); // Format using 6 decimals
 
-    const daiAllowance = await DAI_Contract.allowance(impersonatedSigner.address, ROUTER_ADDRESS);
-    console.log("DAI allowance:", ethers.formatUnits(daiAllowance, 6)); // Format using 6 decimals
 
-    await ROUTER.addLiquidity(USDC, DAI, amountUSDCDeposit, amountDAIDeposit, amountAMin, amountBMin, TOKEN_HOLDER, deadline )
+    // const usdcAllowance = await USDC_Contract.allowance(impersonatedSigner.address, ROUTER_ADDRESS);
+
+
+    // console.log("USDC allowance:", ethers.formatUnits(usdcAllowance, 6)); // Format using 6 decimals
+
+
+    // const daiAllowance = await DAI_Contract.allowance(impersonatedSigner.address, ROUTER_ADDRESS);
+
+    // console.log("DAI allowance:", ethers.formatUnits(daiAllowance, 6)); // Format using 6 decimals
+
+
+    await ROUTER.addLiquidity(
+        USDC, 
+        DAI, 
+        valueInUSDC, 
+        valueInDAI, 
+        minValueA, 
+        minValueB, 
+        TOKEN_HOLDER, 
+        deadline 
+    )
 
     console.log("=========================================================");
 
-    const usdcBalAfter = await USDC_Contract.balanceOf(impersonatedSigner.address);
-    const daiBalAfter = await DAI_Contract.balanceOf(impersonatedSigner.address);
+    const usdcBalAfter = await USDC_Contract.balanceOf(TOKEN_HOLDER);
+    const daiBalAfter = await DAI_Contract.balanceOf(TOKEN_HOLDER);
 
     console.log("usdc balance after liquidity", Number(usdcBalAfter));
     console.log("dai balance after liquidity", Number(daiBalAfter));
